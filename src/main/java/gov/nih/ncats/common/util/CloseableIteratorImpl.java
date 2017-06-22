@@ -9,6 +9,10 @@ import java.util.Objects;
  * Helper class that can create CloseableIterator
  * objects.
  *
+ * This has to be in a different class than the
+ * CloseableIterator interface until Java 9
+ * which allows private methods and classes in the interface.
+ *
  * Created by katzelda on 4/21/16.
  */
 final class CloseableIteratorImpl {
@@ -57,7 +61,7 @@ final class CloseableIteratorImpl {
     }
 
 
-    private static final class Wrapper<T> implements CloseableIterator<T>{
+    static final class Wrapper<T> implements CloseableIterator<T>{
         private final Iterator<T> delegate;
 
         public Wrapper(Iterator<T> iter){
@@ -86,7 +90,7 @@ final class CloseableIteratorImpl {
     }
 
 
-    private static final class CloseableWrapper<T, I extends Iterator<T> & Closeable> implements CloseableIterator<T>{
+    static final class CloseableWrapper<T, I extends Iterator<T> & Closeable> implements CloseableIterator<T>{
 
         private final I delegate;
 
