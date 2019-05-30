@@ -1,4 +1,4 @@
-package gov.nih.ncats.common.util;
+package gov.nih.ncats.common.io;
 
 import java.io.*;
 import java.nio.file.FileVisitResult;

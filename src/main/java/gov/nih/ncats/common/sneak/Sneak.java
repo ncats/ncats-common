@@ -1,4 +1,4 @@
-package gov.nih.ncats.common.util;
+package gov.nih.ncats.common.sneak;
 
 /**
  * Implementation of sneakyThrow originally created by Reinier Zwitserloot

@@ -1,4 +1,6 @@
-package gov.nih.ncats.common.util;
+package gov.nih.ncats.common.stream;
+
+        import gov.nih.ncats.common.sneak.Sneak;
 
         import java.util.Comparator;
         import java.util.Spliterator;

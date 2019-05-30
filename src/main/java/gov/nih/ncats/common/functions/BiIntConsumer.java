@@ -1,4 +1,4 @@
-package gov.nih.ncats.common.util.functions;
+package gov.nih.ncats.common.functions;
 
 import java.util.Objects;
 /**

@@ -1,4 +1,4 @@
-package gov.nih.ncats.common.util;
+package gov.nih.ncats.common.iter;
 import java.io.Closeable;
 import java.util.Iterator;
 import java.util.Objects;

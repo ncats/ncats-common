@@ -1,4 +1,4 @@
-package gov.nih.ncats.common.util;
+package gov.nih.ncats.common.stream;
 
 
 import java.util.Comparator;

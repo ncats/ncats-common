@@ -1,5 +1,6 @@
 package gov.nih.ncats.common.util;
 
+import gov.nih.ncats.common.stream.StreamUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

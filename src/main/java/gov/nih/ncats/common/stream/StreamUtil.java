@@ -1,4 +1,7 @@
-package gov.nih.ncats.common.util;
+package gov.nih.ncats.common.stream;
+
+import gov.nih.ncats.common.util.CachedSupplier;
+import gov.nih.ncats.common.util.Unchecked;
 
 import java.io.Closeable;
 import java.util.Arrays;
