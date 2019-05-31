@@ -1,7 +1,14 @@
 package gov.nih.ncats.common.util;
 
-/**
+/*
  * Created by katzelda on 6/20/17.
+ */
+
+/**
+ * Simple holder wrapper to hold an object this
+ * can be used to make something "effectively final".
+ *
+ * @param <T> the type of the object being held.
  */
 public class Holder<T> {
 

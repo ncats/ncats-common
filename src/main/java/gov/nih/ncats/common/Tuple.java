@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import gov.nih.ncats.common.functions.ThrowableBiConsumer;
+import gov.nih.ncats.common.functions.ThrowableBiFunction;
 
 public class Tuple<K,V>{
     private K k;
@@ -21,23 +22,44 @@ public class Tuple<K,V>{
         this.v=v;
     }
 
+    /**
+     * Get the key.
+     * @return
+     */
     @JsonProperty("key")
     public K k(){
         return k;
     }
 
+    /**
+     * Get the value.
+     * @return
+     */
     @JsonProperty("value")
     public V v(){
         return v;
     }
 
-
-    public void consume(ThrowableBiConsumer<K,V> c){
-        c.accept(k, v);
+    /**
+     * Consume the given {@link java.util.function.BiConsumer}
+     * @param consumer a function that applies this tuple's key and value as its 2 parameters.
+     * @return the result of this biFunction.
+     * @throws NullPointerException if biFunction is null.
+     */
+    public <E extends Throwable> void consume(ThrowableBiConsumer<K,V, E> consumer) throws E{
+        consumer.accept(k, v);
     }
 
-    public <T> T map(BiFunction<K,V,T> c){
-        return c.apply(k, v);
+    /**
+     * Return a new type by applying the given
+     * function to this tuple.
+     * @param biFunction a function that applies this tuple's key and value as its 2 parameters.
+     * @param <T> the return type of the function.
+     * @return the result of this biFunction.
+     * @throws NullPointerException if biFunction is null.
+     */
+    public <T, E extends Throwable> T map(ThrowableBiFunction<K,V,T,E> biFunction) throws E{
+        return biFunction.apply(k, v);
     }
 
 
@@ -57,9 +79,7 @@ public class Tuple<K,V>{
      * @return
      */
     public static <K,V,U> Function<Tuple<K,V>, Tuple<K,U>> vmap(Function<V,U> fun){
-        return (t)->{
-            return Tuple.of(t.k(),fun.apply(t.v()));
-        };
+            return t-> Tuple.of(t.k(),fun.apply(t.v()));
     }
 
 
@@ -70,9 +90,7 @@ public class Tuple<K,V>{
      * @return
      */
     public static <K,V,L> Function<Tuple<K,V>, Tuple<L,V>> kmap(Function<K,L> fun){
-        return (t)->{
-            return Tuple.of(fun.apply(t.k()),t.v());
-        };
+        return (t)-> Tuple.of(fun.apply(t.k()),t.v());
     }
 
 
@@ -90,9 +108,7 @@ public class Tuple<K,V>{
     }
 
     public static<K,V> BiFunction<K,V,Tuple<K,V>> map(){
-        return (k,v)->{
-            return new Tuple<K,V>(k,v);
-        };
+        return (k,v)-> new Tuple<K,V>(k,v);
     }
 
     /**
@@ -101,7 +117,7 @@ public class Tuple<K,V>{
      * @return
      */
     public static <T,U> Collector<Tuple<T,U>,?,Map<T,U>> toMap(){
-        return Collectors.toMap(e->e.k(), e->e.v());
+        return Collectors.toMap(Tuple::k, Tuple::v);
     }
 
     /**
@@ -121,31 +137,25 @@ public class Tuple<K,V>{
      * @return
      */
     public static <T,U,V> Collector<Tuple<T,U>,?,Map<T,V>> toGroupedMap(Collector<U,?,V> collect){
-        return Collectors.groupingBy(t->t.k(), Collectors.mapping(t->t.v(), collect));
-    }
-
-
-    @Override
-    public int hashCode(){
-        return this.k.hashCode() ^ (this.v.hashCode() ^ 0xDEADBEEF);
+        return Collectors.groupingBy(Tuple::k, Collectors.mapping(Tuple::v, collect));
     }
 
     @Override
-    public boolean equals(Object o){
-        if(o == this)return true;
-        if(!(o instanceof Tuple)){
-            return false;
-        }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Tuple)) return false;
 
-        Tuple<K,V> tup2 = (Tuple<K,V>)o;
-        if(!(tup2.k.equals(this.k))){
-            return false;
-        }
-        if(!(tup2.v.equals(this.v))){
-            return false;
-        }
-        return true;
+        Tuple<?, ?> tuple = (Tuple<?, ?>) o;
 
+        if (k != null ? !k.equals(tuple.k) : tuple.k != null) return false;
+        return v != null ? v.equals(tuple.v) : tuple.v == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = k != null ? k.hashCode() : 0;
+        result = 31 * result + (v != null ? v.hashCode() : 0);
+        return result;
     }
 
     public static <K,V> Set<Tuple<K,V>> toTupleSet(Map<K,V> map){
