@@ -18,6 +18,7 @@
 
 package gov.nih.ncats.common.stream;
 
+import gov.nih.ncats.common.functions.ThrowableConsumer;
 import gov.nih.ncats.common.sneak.Sneak;
 
 import java.util.Comparator;
@@ -49,24 +50,14 @@ public interface ThrowingStream<T> extends Stream<T>{
     public static <T> ThrowingStream<T> asThrowingStream( Stream<T> stream){
         return new ThrowingStreamImpl<>(stream);
     }
-    /**
-     * A {@link java.util.function.Consumer} that can throw an exception.
-     * @author dkatzel
-     *
-     * @param <T> the type the consumer accepts.
-     * @param <E> the exception that can be thrown.
-     */
-    interface ThrowingConsumer<T, E extends Exception>{
-        void accept(T t) throws E;
 
-    }
     /**
      * Iterate over each element remaining in the stream and call the given
      * ThrowingConsumer, which may throw an Exception E.
      * @param action the consumer to consume for each element.
      * @throws E the Exception the throwing consumer might throw.
      */
-    default <E extends Exception> void throwingForEach(ThrowingConsumer<? super T, E> action) throws E {
+    default <E extends Exception> void throwingForEach(ThrowableConsumer<? super T, E> action) throws E {
         forEach(t-> {
             try {
                 action.accept(t);
@@ -81,7 +72,7 @@ public interface ThrowingStream<T> extends Stream<T>{
      * @param action the consumer to consume for each element.
      * @throws E the Exception the throwing consumer might throw.
      */
-    default <E extends Exception> void throwingForEachOrdered(ThrowingConsumer<? super T, E> action) throws E{
+    default <E extends Exception> void throwingForEachOrdered(ThrowableConsumer<? super T, E> action) throws E{
         forEachOrdered(t-> {
             try {
                 action.accept(t);

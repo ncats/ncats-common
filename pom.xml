@@ -22,13 +22,13 @@
   <groupId>gov.nih.ncats</groupId>
   <artifactId>ncats-common</artifactId>
   <packaging>jar</packaging>
-  <version>0.2-SNAPSHOT</version>
+  <version>0.2</version>
   <name>ncats-common</name>
 
   <licenses>
     <license>
-      <name>CC0 1.0 Universal</name>
-      <url>https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt</url>
+      <name>Apache-2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
