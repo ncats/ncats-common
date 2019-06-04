@@ -16,27 +16,34 @@
  *    limitations under the License.
  */
 
-package gov.nih.ncats.common.functions;
+package gov.nih.ncats.common.io;
 
+import java.io.File;
 import java.util.Objects;
-import java.util.function.Consumer;
-
+import java.util.Optional;
 /**
- * Created by katzelda on 5/30/19.
+ * Abstract {@link InputStreamSupplier} that returns an actual
+ * File for {@link #getFile()}.
  */
-public interface ThrowableConsumer<T, E extends Throwable>{
-    void accept(T t) throws E;
+abstract class AbstractFileInputStreamSupplier implements
+        InputStreamSupplier {
 
-    /**
-     * Wrap the given Consumer in a {@link ThrowableConsumer}
-     * @param consumer the consumer to wrap; can not be null.
-     * @param <T>
-     * @param <E>
-     * @return a new {@link ThrowableConsumer} will never be null.
-     * @throws NullPointerException if consumer is null.
-     */
-    static <T, E extends Throwable> ThrowableConsumer<T,E> wrap(Consumer<T> consumer){
-        Objects.requireNonNull(consumer);
-        return t-> consumer.accept(t);
+    protected final File  file;
+    
+    
+
+    public AbstractFileInputStreamSupplier(File file) {
+        Objects.requireNonNull(file);
+        this.file = file;
     }
+
+
+
+    @Override
+    public Optional<File> getFile() {
+        return Optional.of(file);
+    }
+    
+
 }
+
