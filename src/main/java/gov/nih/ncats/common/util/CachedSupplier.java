@@ -18,6 +18,8 @@
 
 package gov.nih.ncats.common.util;
 
+import gov.nih.ncats.common.sneak.Sneak;
+
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -127,11 +129,12 @@ public class CachedSupplier<T> implements Supplier<T>, Callable<T> {
     }
 
     public static <T> CachedThrowingSupplier<T> ofThrowing(final Callable<T> callable){
-        return new CachedThrowingSupplier<T>(()->{
+        return  CachedThrowingSupplier.createFromSupplier(()->{
             try{
                 return callable.call();
-            }catch(final Exception e){
-                throw new IllegalStateException(e);
+            }catch(final Throwable e){
+                Sneak.sneakyThrow(e);
+                return null; // never gets called ut makes compiler happy
             }
         });
     }
@@ -147,21 +150,28 @@ public class CachedSupplier<T> implements Supplier<T>, Callable<T> {
      *
      * @param <T>
      */
-    public static class CachedThrowingSupplier<T> extends CachedSupplier<T>{
+    public static class CachedThrowingSupplier<T> extends CachedSupplier<Optional<T>>{
 
         public Throwable thrown=null;
 
-        public CachedThrowingSupplier(Supplier<T> c) {
+        public static <T> CachedThrowingSupplier<T> createFromSupplier(Supplier<T> consumer){
+            return new CachedThrowingSupplier(() -> Optional.ofNullable(consumer.get()));
+        }
+        public static <T> CachedThrowingSupplier<T> createFromSupplierOfOptionals(Supplier<Optional<T>> consumer){
+            return new CachedThrowingSupplier(consumer);
+        }
+
+        private CachedThrowingSupplier(Supplier<Optional<T>> c) {
             super(c);
         }
 
         @Override
-        protected T directCall(){
+        protected Optional<T> directCall(){
             try{
                 return super.directCall();
             }catch(Throwable e){
                 setThrown(e);
-                return null;
+                return Optional.empty();
             }
         }
 

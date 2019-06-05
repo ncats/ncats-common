@@ -18,15 +18,17 @@
 
 package gov.nih.ncats.common.functions;
 
+import java.util.function.Supplier;
+
 /**
- * Created by katzelda on 5/30/19.
+ * Created by katzelda on 6/4/19.
  */
 @FunctionalInterface
-public interface ThrowableFunction<T, R, E extends Throwable> {
+public interface ThrowableSupplier<T, E extends Throwable> {
 
-    R apply(T t) throws E;
+    T get() throws E;
 
-    static <T, E extends Throwable> ThrowableFunction<T,T,E> identity(){
-        return t-> t;
+    static <T, E extends Throwable>  ThrowableSupplier<T,E> wrap(Supplier<T> supplier){
+        return ()-> supplier.get();
     }
 }

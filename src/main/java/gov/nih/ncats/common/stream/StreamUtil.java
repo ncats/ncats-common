@@ -18,6 +18,8 @@
 
 package gov.nih.ncats.common.stream;
 
+import gov.nih.ncats.common.functions.ThrowableFunction;
+import gov.nih.ncats.common.functions.ThrowableSupplier;
 import gov.nih.ncats.common.util.CachedSupplier;
 import gov.nih.ncats.common.util.Unchecked;
 
@@ -96,7 +98,6 @@ public class StreamUtil {
         return forIterator(ir);
     }
 
-
     /**
      * Similar to {@link #forGenerator(Supplier)}, except that
      * it returning null triggers the termination of the stream,
@@ -166,29 +167,8 @@ public class StreamUtil {
         }
 
 
-        /**
-         * Create a stream, where the seed value given is used
-         * and function is provided to extract the "next" value
-         * from that seed generator. If the function returns "null"
-         * the stream will be terminated.
-         * @param next
-         * @return
-         */
-        public <T> Stream<T> streamNullable(ThrowableFunction<K,T> next){
-            return forNullableGenerator(k, next);
-        }
 
-        /**
-         * Create a stream, where the seed value given is used
-         * and function is provided to extract the "next" value
-         * from that seed generator. If the function returns an
-         * empty Optional, then the stream is terminated.
-         * @param next
-         * @return
-         */
-        public <T> Stream<T> streamOptional(ThrowableFunction<K,Optional<T>> next){
-            return forGenerator(()->next.apply(k));
-        }
+
 
         /**
          * Create a stream, where the provided seed generator
@@ -310,26 +290,6 @@ public class StreamUtil {
         }
     }
 
-    /**
-     * This is just an extension of the {@link Function} interface
-     * which will wrap a checked exception as a {@link RuntimeException}.
-     * This is used for simplifying the Lambda functions that can throw an
-     * error.
-     *
-     */
-    public static interface ThrowableFunction<T,V> extends Function<T,V>{
-
-        @Override
-        default V apply(T t){
-            try {
-                return applyThrowable(t);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        public V applyThrowable(T t) throws Exception;
-    }
 
 
 
