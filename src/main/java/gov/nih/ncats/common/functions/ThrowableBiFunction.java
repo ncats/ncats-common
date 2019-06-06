@@ -18,10 +18,17 @@
 
 package gov.nih.ncats.common.functions;
 
+import java.util.function.BiFunction;
+
 /**
  * Created by katzelda on 5/30/19.
  */
+@FunctionalInterface
 public interface ThrowableBiFunction<A,B, R, E extends Throwable> {
 
     R apply(A a, B b) throws E;
+
+    static <A,B, R, E extends Throwable> ThrowableBiFunction<A,B,R,E> wrap(BiFunction<A,B,R> biFunction){
+        return (a,b)->biFunction.apply(a,b);
+    }
 }

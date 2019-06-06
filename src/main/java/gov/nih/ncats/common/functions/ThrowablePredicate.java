@@ -18,22 +18,19 @@
 
 package gov.nih.ncats.common.functions;
 
-import java.util.function.Function;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 /**
- * Created by katzelda on 5/30/19.
+ * Created by katzelda on 6/6/19.
  */
 @FunctionalInterface
-public interface ThrowableFunction<T, R, E extends Throwable> {
+public interface ThrowablePredicate<T, E extends Throwable> {
 
-    R apply(T t) throws E;
+    boolean test(T t) throws E;
 
-    static <T, E extends Throwable> ThrowableFunction<T,T,E> identity(){
-        return t-> t;
-    }
-
-
-    static <T, R, E extends Throwable> ThrowableFunction<T,R,E> wrap(Function<T,R> function){
-        return t-> function.apply(t);
+    static <T, E extends Throwable> ThrowablePredicate<T,E> wrap(Predicate<T> predicate){
+        Objects.requireNonNull(predicate);
+        return t-> predicate.test(t);
     }
 }

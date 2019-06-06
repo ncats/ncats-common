@@ -18,12 +18,18 @@
 
 package gov.nih.ncats.common.functions;
 
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 /**
  * Created by katzelda on 5/30/19.
- */
+ */@FunctionalInterface
 public interface ThrowableBiConsumer<K, V, E extends Throwable> {
 
     void accept(K k, V v) throws E;
+
+    static <K, V, E extends Throwable> ThrowableBiConsumer<K,V,E> wrap(BiConsumer<K,V> consumer){
+        Objects.requireNonNull(consumer);
+        return (k,v) -> consumer.accept(k,v);
+    }
 }

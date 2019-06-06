@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 /**
  * Created by katzelda on 5/30/19.
  */
+@FunctionalInterface
 public interface ThrowableConsumer<T, E extends Throwable>{
     void accept(T t) throws E;
 

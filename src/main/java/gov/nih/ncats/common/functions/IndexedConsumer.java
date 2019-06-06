@@ -20,6 +20,10 @@ package gov.nih.ncats.common.functions;
 
 import java.util.Objects;
 
+/**
+ * A Consumer that also includes the index of the item consumed.
+ * @param <T> the type of the object being consumed.
+ */
 @FunctionalInterface
 public interface IndexedConsumer<T> {
     /**
