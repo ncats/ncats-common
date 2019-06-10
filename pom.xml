@@ -25,6 +25,11 @@
   <version>0.3</version>
   <name>ncats-common</name>
 
+  <description>Common utility classes used in several NIH/NCATS projects.</description>
+  <organization>
+    <name>NIH/NCATS</name>
+    <url>https://ncats.nih.gov</url>
+  </organization>
   <licenses>
     <license>
       <name>Apache-2.0</name>
@@ -33,9 +38,53 @@
     </license>
   </licenses>
 
+  <developers>
+    <developer>
+      <id>katzelda</id>
+      <name>Daniel Katzel</name>
+      <email>daniel.katzel@nih.gov</email>
+      <roles>
+        <role>architect</role>
+        <role>developer</role>
+      </roles>
+      <timezone>America/New_York</timezone>
+    </developer>
+    <developer>
+      <id>peryeata</id>
+      <name>Tyler Peryea</name>
+      <email>tyler.peryea@nih.gov</email>
+      <roles>
+        <role>architect</role>
+        <role>developer</role>
+      </roles>
+      <timezone>America/New_York</timezone>
+    </developer>
+    <developer>
+      <id>nguyenda</id>
+      <name>Dac-Trung Nguyen</name>
+      <email>dactrung.nguyen@nih.gov</email>
+      <roles>
+        <role>architect</role>
+        <role>developer</role>
+      </roles>
+      <timezone>America/New_York</timezone>
+    </developer>
+  </developers>
+
   <scm>
     <url>https://spotlite.nih.gov/ncats/ncats-common</url>
   </scm>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
 
 
   <dependencies>
@@ -64,6 +113,62 @@
       <target>1.8</target>
     </configuration>
   </plugin>
+    <plugin>
+      <groupId>org.sonatype.plugins</groupId>
+      <artifactId>nexus-staging-maven-plugin</artifactId>
+      <version>1.6.7</version>
+      <extensions>true</extensions>
+      <configuration>
+        <serverId>ossrh</serverId>
+        <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+      </configuration>
+    </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9.1</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <additionalparam>-Xdoclint:none</additionalparam>
+            </configuration>
+
+          </execution>
+        </executions>
+      </plugin>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-gpg-plugin</artifactId>
+      <version>1.5</version>
+      <executions>
+        <execution>
+          <id>sign-artifacts</id>
+          <phase>verify</phase>
+          <goals>
+            <goal>sign</goal>
+          </goals>
+
+        </execution>
+      </executions>
+    </plugin>
 </plugins>
   </build>
 </project>
