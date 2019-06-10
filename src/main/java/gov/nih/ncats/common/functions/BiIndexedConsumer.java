@@ -19,6 +19,12 @@
 package gov.nih.ncats.common.functions;
 
 import java.util.Objects;
+
+/**
+ * A Consumer that also includes an x,y coordinate.  This is helpful
+ * when consuming sparse matrices.
+ * @param <T>
+ */
 @FunctionalInterface
 public interface BiIndexedConsumer<T> {
     /**
