@@ -72,6 +72,24 @@ public final class IOUtil {
 
         });
     }
+
+    /**
+     * Create this new directory and any parent directories as needed.
+     * @param dir the directory to create; if {@code null} or already exists,
+     *            then will not
+     *            create anything.
+     * @throws IOException if there are any problems creating this directory.
+     */
+    public static void mkdirs(File dir) throws IOException{
+        if(dir ==null){
+            return;
+        }
+        //use new Java 7 method
+        //which will throw a meaningful IOException if there are permission or file problems
+        //and checks if already exists and doesn't do anything if it already exists.
+        Files.createDirectories(dir.toPath());
+    }
+
     public static void deleteRecursively(File dir) throws IOException {
         if(!dir.exists()){
             return;

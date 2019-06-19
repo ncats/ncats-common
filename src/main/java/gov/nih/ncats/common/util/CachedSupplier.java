@@ -20,6 +20,7 @@ package gov.nih.ncats.common.util;
 
 import gov.nih.ncats.common.sneak.Sneak;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -49,11 +50,11 @@ public class CachedSupplier<T> implements Supplier<T>, Callable<T> {
 
     private final Supplier<T> c;
     private T cache;
-    private boolean run=false;
+    private AtomicBoolean run=new AtomicBoolean(false);
     private long generatedWithVersion;
 
     public CachedSupplier(final Supplier<T> c){
-        this.c=c;
+        this.c= Objects.requireNonNull(c);
     }
 
     /**
@@ -76,7 +77,7 @@ public class CachedSupplier<T> implements Supplier<T>, Callable<T> {
                 }
                 this.generatedWithVersion=CachedSupplier.generatedVersion.get();
                 this.cache=directCall();
-                this.run=true;
+                this.run.set(true);
                 return this.cache;
             }
         }
@@ -97,18 +98,42 @@ public class CachedSupplier<T> implements Supplier<T>, Callable<T> {
     }
 
     public boolean hasRun(){
-        return this.run && this.generatedWithVersion==CachedSupplier.generatedVersion.get();
+        return this.run.get() && !cacheHasBeenReset();
     }
 
 
+    protected boolean cacheHasBeenReset(){
+        return this.generatedWithVersion!=CachedSupplier.generatedVersion.get();
+    }
     /**
      * Flag to signal this instance to recalculate from its
      * supplier on next call.
      */
     public void resetCache(){
-        this.run=false;
+        this.run.set(false);
     }
 
+    /**
+     * Make a CachedSupplier that will only run once;
+     * any calls to {@link #resetCache()} or {@link #resetAllCaches()}
+     * does not affect THIS returned instance.
+     *
+     * @param supplier the supplier to run only once; can not e null;
+     * @param <T>
+     * @return
+     */
+    public static <T> CachedSupplier<T> runOnce(final Supplier<T> supplier){
+        return new UnResettableCachedSupplier<>(supplier);
+    }
+    public static <T> CachedSupplier<T> runOnceCallable(final Callable<T> callable){
+        return runOnce(()->{
+            try{
+                return callable.call();
+            }catch(final Exception e){
+                throw new IllegalStateException(e);
+            }
+        });
+    }
     public static <T> CachedSupplier<T> of(final Supplier<T> supplier){
         return new CachedSupplier<T>(supplier);
     }
@@ -189,5 +214,22 @@ public class CachedSupplier<T> implements Supplier<T>, Callable<T> {
             return Optional.ofNullable(thrown);
         }
 
+    }
+
+    private static class UnResettableCachedSupplier<T> extends CachedSupplier<T>{
+
+        public UnResettableCachedSupplier(Supplier<T> c) {
+            super(c);
+        }
+
+        @Override
+        protected boolean cacheHasBeenReset() {
+            return false;
+        }
+
+        @Override
+        public void resetCache() {
+            //no-op
+        }
     }
 }
