@@ -118,13 +118,15 @@ public class CachedSupplier<T> implements Supplier<T>, Callable<T> {
      * any calls to {@link #resetCache()} or {@link #resetAllCaches()}
      * does not affect THIS returned instance.
      *
-     * @param supplier the supplier to run only once; can not e null;
-     * @param <T>
-     * @return
+     * @param supplier the supplier to run only once; can not be null;
+     * @param <T> the type returned by the Supplier.
+     * @return a new CachedSupplier instance.
+     * @throws NullPointerException if supplier is null.
      */
     public static <T> CachedSupplier<T> runOnce(final Supplier<T> supplier){
         return new UnResettableCachedSupplier<>(supplier);
     }
+
     public static <T> CachedSupplier<T> runOnceCallable(final Callable<T> callable){
         return runOnce(()->{
             try{
