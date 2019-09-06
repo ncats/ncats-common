@@ -19,6 +19,7 @@
 package gov.nih.ncats.common.io;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,6 +35,8 @@ public final class IOUtil {
         //can not instantiate
     }
 
+
+    public static Charset UTF_8 = Charset.forName("UTF-8");
 
     public static void deleteRecursivelyQuitely(File dir) {
         try {
