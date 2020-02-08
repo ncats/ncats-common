@@ -18,6 +18,8 @@
 
 package gov.nih.ncats.common.functions;
 
+import gov.nih.ncats.common.sneak.Sneak;
+
 import java.util.function.Supplier;
 
 /**
@@ -30,5 +32,21 @@ public interface ThrowableSupplier<T, E extends Throwable> {
 
     static <T, E extends Throwable>  ThrowableSupplier<T,E> wrap(Supplier<T> supplier){
         return ()-> supplier.get();
+    }
+
+    /**
+     * Wraps this Throwing Supplier in a normal supplier that
+     * will Sneakily throw any Throwable thown during the get call.
+     * @return a new Supplier that wraps this ThrowableSupplier.
+     */
+    default Supplier<T> asSupplier(){
+        return ()-> {
+            try{
+                return get();
+            }catch(Throwable t){
+                Sneak.sneakyThrow(t);
+                return null;
+            }
+        };
     }
 }

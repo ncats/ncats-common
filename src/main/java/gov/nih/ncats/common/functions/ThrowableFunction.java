@@ -18,6 +18,8 @@
 
 package gov.nih.ncats.common.functions;
 
+import gov.nih.ncats.common.sneak.Sneak;
+
 import java.util.function.Function;
 
 /**
@@ -35,5 +37,16 @@ public interface ThrowableFunction<T, R, E extends Throwable> {
 
     static <T, R, E extends Throwable> ThrowableFunction<T,R,E> wrap(Function<T,R> function){
         return t-> function.apply(t);
+    }
+
+    default Function<T, R> asFunction(){
+        return t-> {
+            try{
+                return apply(t);
+            }catch(Throwable ex){
+                Sneak.sneakyThrow(ex);
+                return null;
+            }
+        };
     }
 }

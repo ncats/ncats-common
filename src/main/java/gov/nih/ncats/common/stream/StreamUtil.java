@@ -168,7 +168,30 @@ public class StreamUtil {
 
 
 
+        /**
+         * Create a stream, where the seed value given is used
+         * and function is provided to extract the "next" value
+         * from that seed generator. If the function returns "null"
+         * the stream will be terminated.
+         * @param next
+         * @return
+         */
+        public <T, E extends Throwable> Stream<T> streamNullable(ThrowableFunction<K,T, E> next){
+            return forNullableGenerator(k, next.asFunction());
+        }
 
+        /**
+         * Create a stream, where the seed value given is used
+         * and function is provided to extract the "next" value
+         * from that seed generator. If the function returns an
+         * empty Optional, then the stream is terminated.
+         * @param next
+         * @return
+         */
+        public <T, E extends Throwable> Stream<T> streamOptional(ThrowableFunction<K,Optional<T>, E> next){
+            ThrowableSupplier<Optional<T>, E> sup = ()-> next.apply(k);
+            return forGenerator(sup.asSupplier());
+        }
 
         /**
          * Create a stream, where the provided seed generator
