@@ -25,7 +25,7 @@
   <version>0.3.2</version>
   <name>ncats-common</name>
 
-  <url>https://spotlite.nih.gov/ncats/ncats-common/</url>
+  <url>https://github.com/ncats/ncats-common</url>
   <description>Common utility classes used in several NIH/NCATS projects.</description>
   <organization>
     <name>NIH/NCATS</name>
