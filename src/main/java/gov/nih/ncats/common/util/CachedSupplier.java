@@ -20,6 +20,8 @@ package gov.nih.ncats.common.util;
 
 import gov.nih.ncats.common.sneak.Sneak;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -34,7 +36,14 @@ import java.util.function.Supplier;
  * @author peryeata
  * @param <T>
  */
-public class CachedSupplier<T> implements Supplier<T>, Callable<T> {
+public class CachedSupplier<T> implements Supplier<T>, Callable<T>, ResetableCache {
+
+    @FunctionalInterface
+    public interface SupplierInvocationListener{
+        void invoked();
+
+
+    }
     private static AtomicLong generatedVersion= new AtomicLong();
 
 
@@ -50,13 +59,25 @@ public class CachedSupplier<T> implements Supplier<T>, Callable<T> {
 
     private final Supplier<T> c;
     private T cache;
+    private volatile boolean runAtLeastOnce=false;
     private AtomicBoolean run=new AtomicBoolean(false);
     private long generatedWithVersion;
-
+    //most cached suppliers won't have listeners so initialize to 0
+    private List<SupplierInvocationListener> listeners = new ArrayList<>(0);
     public CachedSupplier(final Supplier<T> c){
         this.c= Objects.requireNonNull(c);
     }
 
+    public void removeListener(SupplierInvocationListener l){
+        listeners.remove(Objects.requireNonNull(l));
+    }
+    public void addListener(SupplierInvocationListener l){
+        listeners.add(Objects.requireNonNull(l));
+    }
+
+    private void fireListeners(){
+        listeners.forEach(SupplierInvocationListener::invoked);
+    }
     /**
      * Delegates to {@link #get()}
      */
@@ -78,6 +99,7 @@ public class CachedSupplier<T> implements Supplier<T>, Callable<T> {
                 this.generatedWithVersion=CachedSupplier.generatedVersion.get();
                 this.cache=directCall();
                 this.run.set(true);
+                runAtLeastOnce=true;
                 return this.cache;
             }
         }
@@ -85,7 +107,9 @@ public class CachedSupplier<T> implements Supplier<T>, Callable<T> {
 
     protected T directCall(){
 
-        return this.c.get();
+        T ret= this.c.get();
+        fireListeners();
+        return ret;
     }
 
 
@@ -103,14 +127,16 @@ public class CachedSupplier<T> implements Supplier<T>, Callable<T> {
 
 
     protected boolean cacheHasBeenReset(){
-        return this.generatedWithVersion!=CachedSupplier.generatedVersion.get();
+        return runAtLeastOnce && this.generatedWithVersion!=CachedSupplier.generatedVersion.get();
     }
     /**
      * Flag to signal this instance to recalculate from its
      * supplier on next call.
      */
-    public void resetCache(){
+    @Override
+    public synchronized void resetCache(){
         this.run.set(false);
+        this.cache=null;
     }
 
     /**
@@ -125,6 +151,18 @@ public class CachedSupplier<T> implements Supplier<T>, Callable<T> {
      */
     public static <T> CachedSupplier<T> runOnce(final Supplier<T> supplier){
         return new UnResettableCachedSupplier<>(supplier);
+    }
+    /**
+     * Make a CachedSupplier that will only run once;
+     * any calls to {@link #resetCache()} or {@link #resetAllCaches()}
+     * does not affect THIS returned instance.
+     *
+     * @param result the constant result;
+     * @param <T> the type returned by the Supplier.
+     * @return a new CachedSupplier instance.
+     */
+    public static <T> CachedSupplier<T> ofConstant( T result){
+        return new UnResettableCachedSupplier<>(()-> result);
     }
 
     public static <T> CachedSupplier<T> runOnceCallable(final Callable<T> callable){

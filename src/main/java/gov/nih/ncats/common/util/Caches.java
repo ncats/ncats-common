@@ -25,6 +25,8 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * <code>Caches</code> is a utility class which contains various 
@@ -185,7 +187,7 @@ public final class Caches
      * @return a new Map instance with default capacity
      */
     public static <K,V> Map<K,V> createSoftReferencedValueLRUCache(int maxSize){
-        return new SoftReferenceLRUCache<K, V>(maxSize);
+        return new SoftReferenceLRUCache<K, V>(maxSize,null);
     }
     
     /**
@@ -226,7 +228,7 @@ public final class Caches
      * @return a new Map instance with default capacity
      */
     public static <K,V> Map<K,V> createWeakReferencedValueLRUCache(int maxSize){
-        return new WeakReferenceLRUCache<K,V>(maxSize);
+        return new WeakReferenceLRUCache<K,V>(maxSize, null);
     }
     
     /**
@@ -281,23 +283,29 @@ public final class Caches
  
             private static final long serialVersionUID = -9015747210650112857L;
         private final int maxAllowedSize;
-    
-        protected LRUCache(int maxAllowedSize, float loadFactor)
+
+        private final Consumer<Entry<K, V>> removedConsumer;
+
+        protected LRUCache(int maxAllowedSize, float loadFactor, Consumer<Entry<K, V>> removedConsumer)
         {
             super(MapUtil.computeMinHashMapSizeWithoutRehashing(maxAllowedSize, loadFactor),loadFactor, true);
             this.maxAllowedSize = maxAllowedSize;
+            this.removedConsumer = removedConsumer==null? e->{} : removedConsumer;
         }
     
         protected LRUCache(int maxAllowedSize)
         {
-            this(maxAllowedSize, Caches.DEFAULT_LOAD_FACTOR);
+            this(maxAllowedSize, Caches.DEFAULT_LOAD_FACTOR,e->{});
         }
     
         
         @Override
-        protected boolean removeEldestEntry(Entry<K, V> eldest)
-        {
-            return this.size() > this.maxAllowedSize;
+        protected boolean removeEldestEntry(Entry<K, V> eldest) {
+            if(this.size() > this.maxAllowedSize){
+                removedConsumer.accept(eldest);
+                return true;
+            }
+            return false;
         }
     
     }
@@ -497,19 +505,33 @@ public final class Caches
      *
      */
     private static class SoftReferenceLRUCache<K,V> extends AbstractReferencedCache<K,V, SoftReference<V>>{
-       
-    	 /**
+
+
+        /**
          * Create a new SoftReferenceLRUCache with the given max capacity.
          * If the map ever grows beyond the max capacity, then the least
          * recently used element will be removed to make room.
          * @param maxSize the max number of references to store in the map;
          * should be >=1.
          */
-        public SoftReferenceLRUCache(int maxSize) {
+        SoftReferenceLRUCache(int maxSize, Consumer<Entry<K,V>> biConsumer) {
+            this(maxSize, DEFAULT_LOAD_FACTOR, biConsumer);
+        }
+        /**
+         * Create a new SoftReferenceLRUCache with the given max capacity.
+         * If the map ever grows beyond the max capacity, then the least
+         * recently used element will be removed to make room.
+         * @param maxSize the max number of references to store in the map;
+         * should be >=1.
+         */
+        SoftReferenceLRUCache(int maxSize, float loadFactor, Consumer<Entry<K,V>> biConsumer) {
           super(
         		  new LRUCache<K,SoftReference<V>>(
         				  maxSize, 
-        				  DEFAULT_LOAD_FACTOR), 
+        				  loadFactor,
+                          biConsumer ==null? e->{}:
+                                  e-> biConsumer.accept(new AbstractMap.SimpleEntry<K,V>(e.getKey(), e.getValue().get()))
+                          ),
 				  maxSize);
         }
 
@@ -532,8 +554,17 @@ public final class Caches
      *
      */
     private static class WeakReferenceLRUCache<K,V> extends AbstractReferencedCache<K,V, WeakReference<V>>{
-        
-        
+
+        /**
+         * Create a new WeakReferenceLRUCache with the given max capacity.
+         * If the map ever grows beyond the max capacity, then the least
+         * recently used element will be removed to make room.
+         * @param maxSize the max number of references to store in the map;
+         * should be >=1.
+         */
+        public WeakReferenceLRUCache(int maxSize, Consumer<Entry<K,V>> consumer) {
+            this(maxSize, DEFAULT_LOAD_FACTOR, consumer);
+        }
     	 /**
          * Create a new WeakReferenceLRUCache with the given max capacity.
          * If the map ever grows beyond the max capacity, then the least
@@ -541,8 +572,11 @@ public final class Caches
          * @param maxSize the max number of references to store in the map;
          * should be >=1.
          */
-        public WeakReferenceLRUCache(int maxSize) {
-            super(new LRUCache<K,WeakReference<V>>(maxSize, DEFAULT_LOAD_FACTOR), maxSize);
+        public WeakReferenceLRUCache(int maxSize, float loadFactor, Consumer<Entry<K,V>> consumer) {
+            super(new LRUCache<K,WeakReference<V>>(maxSize, loadFactor,
+                    consumer ==null? e->{}:
+                            e-> consumer.accept(new AbstractMap.SimpleEntry<K,V>(e.getKey(), e.getValue().get()))
+            ), maxSize);
         }
         
         /**
@@ -582,5 +616,93 @@ public final class Caches
             return new WeakReference<V>(value,referenceQueue);
         }
 
+    }
+    public enum Type{
+        STRONG{
+            @Override
+            <K, V> Map<K, V> create(int initialCapacity, float loadFactor) {
+                return new LinkedHashMap<K,V>(initialCapacity, loadFactor);
+            }
+
+            @Override
+            <K, V> Map<K, V> createLru(int size,  float loadFactor, Consumer<Entry<K, V>> removedEldestEntryConsumer) {
+                return new LRUCache<K,V>(size, loadFactor, removedEldestEntryConsumer);
+            }
+        },
+        SOFT{
+            @Override
+            <K, V> Map<K, V> create(int initialCapacity, float loadFactor) {
+                return new SoftReferenceCache<K, V>(initialCapacity);
+            }
+            @Override
+            <K, V> Map<K, V> createLru(int size,  float loadFactor, Consumer<Entry<K, V>> removedEldestEntryConsumer) {
+                return new SoftReferenceLRUCache<>(size, loadFactor, removedEldestEntryConsumer);
+            }
+        },
+        WEAK{
+            @Override
+            <K, V> Map<K, V> create(int initialCapacity, float loadFactor) {
+                return new WeakReferenceCache<>(initialCapacity);
+            }
+            @Override
+            <K, V> Map<K, V> createLru(int size,  float loadFactor, Consumer<Entry<K, V>> removedEldestEntryConsumer) {
+                return new WeakReferenceLRUCache<>(size, loadFactor, removedEldestEntryConsumer);
+            }
+        };
+        abstract <K,V> Map<K,V> create(int initialCapacity, float loadFactor);
+
+        abstract <K,V> Map<K,V> createLru(int size, float loadFactor, Consumer<Entry<K, V>> removedEldestEntryConsumer);
+
+        private <K,V> Map<K,V> createCache(int initialCapacity, float loadFactor, boolean lruFlag, Consumer<Entry<K, V>> removedEldestEntryConsumer){
+            if(lruFlag){
+                return createLru(initialCapacity, loadFactor, removedEldestEntryConsumer);
+            }else{
+                return create(initialCapacity,loadFactor);
+            }
+        }
+    }
+
+    public static <K,V> Builder<K,V> builder(){
+        return new Builder<>();
+    }
+    public static class Builder<K,V>{
+        private Type type = Type.STRONG;
+        private boolean lruFlag = false;
+        private float loadFactor = DEFAULT_LOAD_FACTOR;
+
+        private int capacity = DEFAULT_CAPACITY;
+        private Consumer<Entry<K,V>> removedEldestEntryConsumer;
+
+        public Builder<K,V> type(Type type){
+            this.type = type==null? Type.STRONG:type;
+            return this;
+        }
+        public Builder<K,V> capacity(int capacity){
+            if(capacity < 1){
+                throw new IllegalArgumentException("capacity can not be < 1");
+            }
+            this.capacity = capacity;
+            return this;
+        }
+        public Builder<K,V> loadFactor(float loadFactor){
+            if(loadFactor <=0){
+                throw new IllegalArgumentException("loadFactor must be > 0");
+            }
+            this.loadFactor = loadFactor;
+            return this;
+        }
+        public Builder<K,V> setLru(boolean isLru){
+            this.lruFlag=isLru;
+            return this;
+        }
+        public Builder<K,V> setLru(Consumer<Entry<K,V>> removedEldestEntryConsumer){
+            this.lruFlag=true;
+            this.removedEldestEntryConsumer = removedEldestEntryConsumer;
+            return this;
+        }
+
+        public Map<K,V> build(){
+            return type.createCache(capacity,loadFactor,lruFlag, removedEldestEntryConsumer);
+        }
     }
 }

@@ -40,7 +40,10 @@ public class TestLRUCache {
     protected Map<String, String> sut;
     
     protected Map<String,String> createLRUCache(int size){
-        return Caches.createLRUCache(size);
+        return Caches.<String,String>builder()
+                        .capacity(size)
+                        .setLru(true)
+                        .build();
     }
     @Before
     public void setup(){

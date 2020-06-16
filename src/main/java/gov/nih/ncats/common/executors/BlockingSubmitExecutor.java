@@ -1,7 +1,7 @@
 /*
  * NCATS-COMMON
  *
- * Copyright 2019 NIH/NCATS
+ * Copyright 2020 NIH/NCATS
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  *    limitations under the License.
  */
 
-package gov.nih.ncats.common.gov.nih.ncats.common.executors;
+package gov.nih.ncats.common.executors;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;

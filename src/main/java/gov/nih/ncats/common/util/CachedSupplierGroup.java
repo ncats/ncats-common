@@ -21,27 +21,34 @@ package gov.nih.ncats.common.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * An object that groups a bunch of {@link CachedSupplier}s together so
  * clients can do bulk resets by group.
  */
-public class CachedSupplierGroup {
+public class CachedSupplierGroup implements ResetableCache{
 
-    private final List<CachedSupplier> cachedSuppliers = new ArrayList<>();
+    private final List<ResetableCache> cachedSuppliers = new ArrayList<>();
+
 
     public CachedSupplierGroup(){
 
     }
 
     /**
-     * Reset all {@link CachedSupplier}s in this group (and only this group).
+     * Reset all {@link CachedSupplier}s in this group.
      *
      */
     public void resetAll(){
-        for(CachedSupplier c: cachedSuppliers){
+        for(ResetableCache c: cachedSuppliers){
             c.resetCache();
         }
+    }
+
+    @Override
+    public void resetCache() {
+            resetAll();
     }
 
     /**
@@ -64,6 +71,42 @@ public class CachedSupplierGroup {
     public <T> CachedSupplier<T> add(CachedSupplier<T> cachedSupplier){
         cachedSuppliers.add(Objects.requireNonNull(cachedSupplier));
         return cachedSupplier;
+    }
+
+    public <T> boolean remove(CachedSupplier<T> cachedSupplier){
+        return cachedSuppliers.remove(cachedSupplier);
+    }
+
+    /**
+     * Wrap the given {@link Supplier} in a CachedSupplier and add it to this group.
+     * @param supplier the cachedSupplier to add - can not be null.
+     * @param <T> the return type of the cachedSupplier.
+     * @return the newly created CachedSupplier for the passed in Supplier.
+     * @throws NullPointerException if supplier is null.
+     *
+     * @implNote This this is the same as but more convient way to write:
+     * <pre>
+     * {@code
+     *  Supplier<T> supplier = ...
+     *
+     *  add(CachedSupplier.of(supplier);
+     * }
+     * </pre>
+     */
+    public <T> CachedSupplier<T> add(Supplier<T> supplier){
+        //cachedSupplier constructor does null check so we don't have to
+        CachedSupplier<T> cachedSupplier = CachedSupplier.of(supplier);
+        cachedSuppliers.add(cachedSupplier);
+        return cachedSupplier;
+    }
+    /**
+     * Add the given CachedSupplierGroup to this group.
+     * @param otherGroup the CachedSupplierGroup to add - can not be null.
+     *
+     * @throws NullPointerException if CachedSupplierGroup is null.
+     */
+    public void add(CachedSupplierGroup otherGroup){
+        cachedSuppliers.add(Objects.requireNonNull(otherGroup));
     }
 
 }
