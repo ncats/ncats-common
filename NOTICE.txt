@@ -1,0 +1,5 @@
+Copyright 2020 NIH/NCATS
+
+This product includes software based on Yield-Java created by
+Benji Weber under MIT license.  https://github.com/benjiman/yield-java. A copy of that license
+is located in derivedWorkLicenses/Yield-Java-LICENSE.txt

@@ -32,6 +32,9 @@ public class Holder<T> {
 
     private volatile T held;
 
+    public static <T> Holder<T> empty(){
+        return new Holder<>(null);
+    }
     public static <T> Holder<T> hold( T obj){
         return new Holder<>(obj);
     }

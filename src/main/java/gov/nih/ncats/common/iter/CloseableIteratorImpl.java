@@ -87,7 +87,7 @@ final class CloseableIteratorImpl {
         }
 
         @Override
-        public void close() throws IOException {
+        public void close() {
             //no-op
         }
 

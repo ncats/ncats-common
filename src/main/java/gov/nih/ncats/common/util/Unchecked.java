@@ -18,6 +18,8 @@
 
 package gov.nih.ncats.common.util;
 
+import gov.nih.ncats.common.functions.ThrowableSupplier;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.concurrent.Callable;
@@ -26,28 +28,30 @@ import java.util.concurrent.Callable;
  * Created by katzelda on 4/20/17.
  */
 public class Unchecked {
-    public interface ThrowingRunnable<E extends Exception>{
+    public interface ThrowingRunnable<E extends Throwable>{
         void run() throws E;
     }
 
-    public static void ioException(ThrowingRunnable<? super IOException> runnable){
+
+
+
+    public static <E extends Exception> void uncheck(ThrowingRunnable<E> runnable){
         try{
             runnable.run();
-        }catch(IOException e){
-            throw new UncheckedIOException(e);
-        } catch (Exception e) {
+        }catch (Error | RuntimeException e) {
+            throw e;
+        }catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static <V> V uncheck(Callable<V> callable){
+    public static <T,E extends Exception> T uncheck(ThrowableSupplier<T,E> runnable){
         try{
-            return callable.call();
-        }catch(IOException e){
-            throw new UncheckedIOException(e);
-        } catch (Exception e) {
+            return runnable.get();
+        }catch (Error | RuntimeException e) {
+            throw e;
+        }catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-
 }

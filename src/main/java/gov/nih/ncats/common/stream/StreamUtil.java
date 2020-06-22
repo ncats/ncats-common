@@ -51,7 +51,7 @@ public class StreamUtil {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(it, Spliterator.IMMUTABLE), false)
                 .onClose(()->{
                     if(it instanceof Closeable){
-                        Unchecked.ioException(()->{
+                        Unchecked.uncheck(()->{
                             ((Closeable)it).close();
                         });
                     }
