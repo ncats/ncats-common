@@ -1,7 +1,7 @@
 /*
  * NCATS-COMMON
  *
- * Copyright 2019 NIH/NCATS
+ * Copyright 2020 NIH/NCATS
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,27 +16,16 @@
  *    limitations under the License.
  */
 
-package gov.nih.ncats.common.sneak;
-
+package gov.nih.ncats.common.functions;
 /**
- * Implementation of sneakyThrow originally created by Reinier Zwitserloot
- *
- * @see <a href="http://www.mail-archive.com/javaposse@googlegroups.com/msg05984.html">Original Java Posse Post by Reinier Zwitserloot</a>
+ * Functional interface that takes 2 parameters, a primitive index (offset)
+ * and the boolean value at that offset.
  * @author dkatzel
  *
+ * @param <E> the exception that could be thrown.
  */
-public class Sneak {
-    public  static <T> T sneakyThrow(Throwable t) {
-        if (t == null) {
-            throw new NullPointerException("t");
-        }
-        Sneak.sneakyThrow0(t);
-        return null;
-    }
+@FunctionalInterface
+public interface ThrowingIntIndexedBooleanConsumer<E extends Throwable> {
 
-    @SuppressWarnings("unchecked")
-    private static <T extends Throwable> void sneakyThrow0(Throwable t) throws T {
-        throw (T) t;
-    }
+    void accept(int index, boolean value) throws E;
 }
-

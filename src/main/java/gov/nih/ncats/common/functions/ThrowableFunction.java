@@ -44,8 +44,7 @@ public interface ThrowableFunction<T, R, E extends Throwable> {
             try{
                 return apply(t);
             }catch(Throwable ex){
-                Sneak.sneakyThrow(ex);
-                return null;
+                return Sneak.sneakyThrow(ex);
             }
         };
     }

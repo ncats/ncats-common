@@ -19,10 +19,16 @@
 package gov.nih.ncats.common.io;
 
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import gov.nih.ncats.common.functions.ThrowableSupplier;
+import gov.nih.ncats.common.sneak.Sneak;
+
+import java.io.*;
+import java.net.URL;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipInputStream;
 
 
 /**
@@ -92,7 +98,7 @@ public interface InputStreamSupplier {
      * @throws IOException if there is a problem reading this file.
      * @throws NullPointerException if f is null.
      */
-    public static InputStreamSupplier forFile(File f) throws IOException{
+    static InputStreamSupplier forFile(File f) throws IOException{
        IOUtil.verifyIsReadable(f);
        
        //check that file isn't empty
@@ -116,5 +122,47 @@ public interface InputStreamSupplier {
        }
        
         return new RawFileInputStreamSupplier(f);
+    }
+
+    static InputStreamSupplier forResourse(URL url) throws IOException{
+        Objects.requireNonNull(url, "url can not be null");
+        ThrowableSupplier<InputStream, IOException> supplier = ()->url.openStream();
+        try(InputStream in = supplier.get()){
+            if(in ==null){
+                throw new FileNotFoundException("could not find resource with url '"+url +"'");
+            }
+            byte[] magicNumber = new MagicNumberInputStream(in).peekMagicNumber();
+            if (magicNumber[0] == (byte)0x50 && magicNumber[1] == (byte)0x4B && magicNumber[2] == (byte)0x03 && magicNumber[3]== (byte) 0x04){
+                //zipped
+                return new SupplierInputStreamSupplier(()->{
+                    try{
+                        ZipInputStream zip =new ZipInputStream(new BufferedInputStream(supplier.get()));
+                        //assume first record is the entry we care about?
+                        zip.getNextEntry();
+                        return in;
+                    }catch(Throwable t){
+                        return Sneak.sneakyThrow(t);
+                    }
+                });
+            }
+            if( magicNumber[0] == (byte) 0x1F && magicNumber[1] == (byte)0x8B){
+                //gzip
+                return new SupplierInputStreamSupplier(()->{
+                    try{
+                        return new GZIPInputStream(new BufferedInputStream(supplier.get()));
+                    }catch(IOException e){
+                        return Sneak.sneakyThrow(e);
+                    }
+                });
+            }
+
+            return new SupplierInputStreamSupplier(()->{
+                try{
+                    return new BufferedInputStream(supplier.get());
+                }catch(Throwable t){
+                    return Sneak.sneakyThrow(t);
+                }
+            });
+        }
     }
 }

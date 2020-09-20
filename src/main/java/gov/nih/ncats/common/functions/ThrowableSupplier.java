@@ -44,8 +44,7 @@ public interface ThrowableSupplier<T, E extends Throwable> {
             try{
                 return get();
             }catch(Throwable t){
-                Sneak.sneakyThrow(t);
-                return null;
+                return Sneak.sneakyThrow(t);
             }
         };
     }

@@ -22,7 +22,7 @@
   <groupId>gov.nih.ncats</groupId>
   <artifactId>ncats-common</artifactId>
   <packaging>jar</packaging>
-  <version>0.3.3</version>
+  <version>0.3.4</version>
   <name>ncats-common</name>
 
   <url>https://github.com/ncats/ncats-common</url>

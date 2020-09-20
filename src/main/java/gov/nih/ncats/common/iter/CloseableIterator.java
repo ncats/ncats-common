@@ -18,8 +18,10 @@
 
 package gov.nih.ncats.common.iter;
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * An Iterator that wraps somekind of resource that
@@ -56,7 +58,7 @@ public interface CloseableIterator<T> extends Iterator<T>, Closeable{
      * @throws NullPointerException if iter is null.
      */
     @SuppressWarnings("unchecked")
-    public static <T, I extends Iterator<T> & Closeable> CloseableIterator<T> wrap(Iterator<T> iter){
+    static <T, I extends Iterator<T> & Closeable> CloseableIterator<T> wrap(Iterator<T> iter){
         Objects.requireNonNull(iter);
 
         if(iter instanceof Closeable){
@@ -67,6 +69,46 @@ public interface CloseableIterator<T> extends Iterator<T>, Closeable{
             return new CloseableIteratorImpl.CloseableWrapper<>((I)iter);
         }
         return new CloseableIteratorImpl.Wrapper<>(iter);
+    }
+    static <T, R> CloseableIterator<R> map(Iterator<T> iter, Function<T,R> mappingFunction){
+        Objects.requireNonNull(iter);
+        Objects.requireNonNull(mappingFunction);
+        return new CloseableIterator<R>() {
+            @Override
+            public void close() {
+                //no-op
+            }
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public R next() {
+                return mappingFunction.apply(iter.next());
+            }
+        };
+    }
+    static <T, R> CloseableIterator<R> map(CloseableIterator<T> iter, Function<T,R> mappingFunction){
+        Objects.requireNonNull(iter);
+        Objects.requireNonNull(mappingFunction);
+        return new CloseableIterator<R>() {
+            @Override
+            public void close() throws IOException {
+                iter.close();
+            }
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public R next() {
+                return mappingFunction.apply(iter.next());
+            }
+        };
     }
 }
 

@@ -198,8 +198,7 @@ public class CachedSupplier<T> implements Supplier<T>, Callable<T>, ResetableCac
             try{
                 return callable.call();
             }catch(final Throwable e){
-                Sneak.sneakyThrow(e);
-                return null; // never gets called ut makes compiler happy
+                return Sneak.sneakyThrow(e);
             }
         });
     }
