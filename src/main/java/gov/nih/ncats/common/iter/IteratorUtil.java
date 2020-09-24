@@ -34,7 +34,7 @@ public final class IteratorUtil {
     }
 
 
-    private static <T,R> Iterator<R> map(Iterator<T> orig, Function<T, R> mapperFunction){
+    public static <T,R> Iterator<R> map(Iterator<T> orig, Function<T, R> mapperFunction){
         Objects.requireNonNull(orig);
         Objects.requireNonNull(mapperFunction);
         return new Iterator<R>() {

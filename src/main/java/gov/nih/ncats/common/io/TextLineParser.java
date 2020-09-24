@@ -93,9 +93,33 @@ public final class TextLineParser implements LineParser{
 	 *  getLine() call instead of every read().
 	 */
 	private int pushedBackValue=NOT_SET;
-	
+
+    /**
+     * Parse the given InputStream into a single giant
+     * String including all end of line characters.
+     * @implNote This is the same as appending each call to {@link #nextLine()}
+     *          to a StringBuilder and then returning the built result.
+     *
+     * @param in the InputStream to parse; can not be null.
+     * @return a new String which will never be null but may be empty.
+     * @throws IOException if there is a problem reading from the inputStream.
+     * @throws NullPointerException if in is null.
+     */
+	public static String parseIntoString(InputStream in) throws IOException{
+	    try(TextLineParser parser = new TextLineParser(in)){
+	        StringBuilder builder = new StringBuilder(2048);
+	        while(true){
+	            String line = parser.nextLine();
+	            if(line ==null){
+	                break;
+                }
+	            builder.append(line);
+            }
+	        return builder.toString();
+        }
+    }
 	public TextLineParser(File f) throws IOException{
-		this(new BufferedInputStream(new FileInputStream(f)));
+		this(InputStreamSupplier.forFile(f).get());
 	}
 	public TextLineParser(File f, long initialPosition) throws IOException {
 		
