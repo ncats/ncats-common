@@ -1,8 +1,8 @@
-#NCATS-Common
+# NCATS-Common
 
 Common Utility classes used in multiple [NIH/NCATS](https://ncats.nih.gov) informatics projects.
 
-##How to include in Java Project
+## How to include in Java Project
 NCATS-common is available on Maven Central
 
 ```
@@ -13,7 +13,7 @@ NCATS-common is available on Maven Central
 </dependency>
 ```
 
-##License 
+## License 
 This project is Open Sourced under the [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0) 
 
 This product includes software based on [Yield-Java](https://github.com/benjiman/yield-java) created by
