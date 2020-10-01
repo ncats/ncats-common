@@ -1,7 +1,7 @@
 <!--
   ~ NCATS-COMMON
   ~
-  ~ Copyright 2019 NIH/NCATS
+  ~ Copyright 2020 NIH/NCATS
   ~
   ~    Licensed under the Apache License, Version 2.0 (the "License");
   ~    you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
   <groupId>gov.nih.ncats</groupId>
   <artifactId>ncats-common</artifactId>
   <packaging>jar</packaging>
-  <version>0.3.4-SNAPSHOT</version>
+  <version>0.3.4</version>
   <name>ncats-common</name>
 
   <url>https://github.com/ncats/ncats-common</url>
@@ -73,7 +73,7 @@
   </developers>
 
   <scm>
-    <url>https://spotlite.nih.gov/ncats/ncats-common</url>
+    <url>https://github.com/ncats/ncats-common.git</url>
   </scm>
 
   <distributionManagement>

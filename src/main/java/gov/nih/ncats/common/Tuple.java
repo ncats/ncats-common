@@ -1,7 +1,7 @@
 /*
  * NCATS-COMMON
  *
- * Copyright 2019 NIH/NCATS
+ * Copyright 2020 NIH/NCATS
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,10 +18,7 @@
 
 package gov.nih.ncats.common;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collector;
@@ -32,9 +29,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import gov.nih.ncats.common.functions.ThrowableBiConsumer;
 import gov.nih.ncats.common.functions.ThrowableBiFunction;
 
+/**
+ * A Key-Value pair Tuple.
+ * @param <K> the Key.
+ * @param <V> the Value.
+ */
 public class Tuple<K,V>{
     private K k;
     private V v;
+
     public Tuple(K k,V v){
         this.k=k;
         this.v=v;
@@ -80,35 +83,51 @@ public class Tuple<K,V>{
         return biFunction.apply(k, v);
     }
 
-
+    /**
+     * Factory method the same as calling constructor.
+     * @param k the key.
+     * @param v the value
+     * @param <K> type of Key
+     * @param <V> type of Value
+     * @return a new Tuple with the given keys and values
+     */
     public static <K,V> Tuple<K,V> of(K k, V v){
         return new Tuple<K,V>(k,v);
 
     }
 
+    /**
+     * Create a new tuple with the key and value swapped so that the new Tuple's Key is this
+     * Tuple value's and the new Tuple's value is this Tuple's Key.
+     * @return a new Tuple with key and value swapped.
+     */
     public Tuple<V,K> swap(){
         return Tuple.of(this.v(),this.k());
     }
 
     /**
+     * Creates a new Tuple with an updated Value using the given Function.
      * Maps the "value" (2nd element) of a Tuple to a new value,
      * while keeping the "key" (1st element) in tact.
-     * @param fun
-     * @return
+     * @param valueFunction
+     * @return a new Tuple with the same key and the applied Function's result as the new value.
+     * @throws NullPointerException if function is null.
      */
-    public static <K,V,U> Function<Tuple<K,V>, Tuple<K,U>> vmap(Function<V,U> fun){
-            return t-> Tuple.of(t.k(),fun.apply(t.v()));
+    public static <K,V,U> Function<Tuple<K,V>, Tuple<K,U>> vmap(Function<V,U> valueFunction){
+            return t-> Tuple.of(t.k(),valueFunction.apply(t.v()));
     }
 
 
     /**
+     * Creates a new Tuple with an updated Key using the given Function.
      * Maps the "key" (1st element) of a Tuple to a new value,
      * while keeping the "value" (2nd element) in tact.
-     * @param fun
-     * @return
+     * @param function
+     * @return a new Tuple with the same value and the applied Function's result as the new key.
+     * @throws NullPointerException if function is null.
      */
-    public static <K,V,L> Function<Tuple<K,V>, Tuple<L,V>> kmap(Function<K,L> fun){
-        return (t)-> Tuple.of(fun.apply(t.k()),t.v());
+    public static <K,V,L> Function<Tuple<K,V>, Tuple<L,V>> kmap(Function<K,L> function){
+        return (t)-> Tuple.of(function.apply(t.k()),t.v());
     }
 
 
@@ -182,7 +201,7 @@ public class Tuple<K,V>{
 
     @Override
     public String toString(){
-        return "<" + this.k.toString() + "," + this.v.toString() + ">";
+        return "<" + Objects.toString(k) + "," + Objects.toString(v) + ">";
     }
 
     public static <K,V,T> Function<Tuple<K,V>, Stream<Tuple<K,T>>> vstream(Function<V,Stream<T>> smap) {

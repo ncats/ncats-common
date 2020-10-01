@@ -1,7 +1,7 @@
 /*
  * NCATS-COMMON
  *
- * Copyright 2019 NIH/NCATS
+ * Copyright 2020 NIH/NCATS
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,6 +22,11 @@ import java.util.concurrent.*;
 import java.util.function.Function;
 
 /**
+ *  A way to cache long running computations so we only have to
+ *  execute them once.  You can think of it as a Map with the key
+ *  being the Arguments and the Value being the returned
+ *  expensive computation.
+ *
  * Created by katzelda on 9/30/16.
  */
 public class Memoizer<A, V>  {
