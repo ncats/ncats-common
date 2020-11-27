@@ -18,9 +18,8 @@
 
 package gov.nih.ncats.common.util;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Supplier;
 
 /**
@@ -29,7 +28,7 @@ import java.util.function.Supplier;
  */
 public class CachedSupplierGroup implements ResetableCache{
 
-    private final List<ResetableCache> cachedSuppliers = new ArrayList<>();
+    private final Deque<ResetableCache> cachedSuppliers = new ConcurrentLinkedDeque<>();
 
 
     public CachedSupplierGroup(){
