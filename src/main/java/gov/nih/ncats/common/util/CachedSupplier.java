@@ -166,12 +166,31 @@ public class CachedSupplier<T> implements Supplier<T>, Callable<T>, ResetableCac
     }
 
     public static <T> CachedSupplier<T> runOnceCallable(final Callable<T> callable){
+        Objects.requireNonNull(callable);
         return runOnce(()->{
             try{
                 return callable.call();
             }catch(final Exception e){
                 throw new IllegalStateException(e);
             }
+        });
+    }
+    public static CachedSupplier<Void> runOnceInitializer(final Runnable runnable){
+        Objects.requireNonNull(runnable);
+        return runOnce(()->{
+            try{
+               runnable.run();
+               return null;
+            }catch(final Exception e){
+                throw new IllegalStateException(e);
+            }
+        });
+    }
+    public static  CachedSupplier<Void> ofInitializer(final Runnable initializer){
+        Objects.requireNonNull(initializer);
+        return new CachedSupplier<>(()->{
+            initializer.run();
+            return null;
         });
     }
     public static <T> CachedSupplier<T> of(final Supplier<T> supplier){
