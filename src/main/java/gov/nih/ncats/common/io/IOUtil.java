@@ -20,10 +20,7 @@ package gov.nih.ncats.common.io;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 
 /**
@@ -159,8 +156,14 @@ public final class IOUtil {
 
     public static BufferedOutputStream newBufferedOutputStream(File outputFile) throws IOException {
         File parent = outputFile.getParentFile();
-        if(parent !=null){
-            Files.createDirectories(parent.toPath());
+        //check if it exists
+        if(parent !=null && !parent.exists()){
+            try {
+                Files.createDirectories(parent.toPath());
+            }catch(FileAlreadyExistsException e){
+                //ignore probably a symlink
+                //https://bugs.openjdk.java.net/browse/JDK-8130464
+            }
         }
         return new BufferedOutputStream(new FileOutputStream(outputFile));
     }
