@@ -1,4 +1,7 @@
 # CHANGE LOG
+## 0.3.6
+1. Added `InputStreamSupplier#forInputStream( in )` which will parse the given InputStream to determine the encoding
+and return a single use `InputStreamSupplier` instance whose get() call can only be called once.
 
 ## 0.3.5
 

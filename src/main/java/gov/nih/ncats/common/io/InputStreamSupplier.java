@@ -124,6 +124,83 @@ public interface InputStreamSupplier {
         return new RawFileInputStreamSupplier(f);
     }
 
+    /**
+     * Create a new single use {@link InputStreamSupplier} for the given {@link InputStream}
+     * and try to correctly automatically decompress it.
+     *
+     * The first few bytes of the given file are parsed to see if
+     * it is one of the few compressed file formats that have
+     * built-in JDK InputStream implementations.
+     *
+     * Currently the only supported formats are:
+     * <ul>
+     * <li>uncompressed</li>
+     * <li>zip - single entry only</li>
+     * <li>gzip</li>
+     * </ul>
+     *
+     * If the data is not one of these types, then it is assumed
+     * to be uncompressed
+     * will be returned.
+     *
+     * Encoding is determined by the actual contents
+     * of the file.
+     *
+     *
+     * @param in the {@link InputStream} object to create an {@link InputStreamSupplier} for;
+     * can not be null.  The client code should not call any methods on this inputstream
+     *           after passing it to this method as this inputstream will have bytes read and then unread
+     *           from it while trying to determine the compression format. Any concurrent reads from this inputstream
+     *           will mess that up.
+     *
+     * @return a new {@link InputStreamSupplier}; will never be null.
+     * @throws IOException if there is a problem reading this file.
+     * @throws NullPointerException if f is null.
+     *
+     * @Since 0.3.6
+     */
+    static InputStreamSupplier forInputStream(InputStream in) throws IOException{
+        byte[] magicNumber = new byte[4];
+        PushbackInputStream pushbackInputStream = new PushbackInputStream(in, 4);
+        int bytesRead = pushbackInputStream.read(magicNumber);
+        if(bytesRead < 1){
+            return new SupplierInputStreamSupplier(() -> new ByteArrayInputStream(new byte[0]));
+        }
+        if(bytesRead <4){
+            int read=0;
+            do {
+                read = pushbackInputStream.read(magicNumber, bytesRead, 4 - bytesRead);
+                bytesRead += read;
+            }while(read >0 && bytesRead < 4);
+
+        }
+        pushbackInputStream.unread(magicNumber,0, bytesRead);
+        if (magicNumber[0] == (byte)0x50 && magicNumber[1] == (byte)0x4B && magicNumber[2] == (byte)0x03 && magicNumber[3]== (byte) 0x04){
+            //zipped
+            return new SupplierInputStreamSupplier(()-> {
+                ZipInputStream zip = new ZipInputStream(new BufferedInputStream(pushbackInputStream));
+                try {
+                    zip.getNextEntry();
+                } catch (IOException e) {
+                    Sneak.sneakyThrow(e);
+                }
+                return zip;
+            });
+        }
+        if( magicNumber[0] == (byte) 0x1F && magicNumber[1] == (byte)0x8B){
+            //gzip
+            return new SupplierInputStreamSupplier(()-> {
+                try {
+                    return new GZIPInputStream(new BufferedInputStream(pushbackInputStream));
+                } catch (IOException e) {
+                    return  Sneak.sneakyThrow(e);
+                }
+            });
+        }
+
+        return new SupplierInputStreamSupplier(()->pushbackInputStream);
+    }
+
     static InputStreamSupplier forResourse(URL url) throws IOException{
         Objects.requireNonNull(url, "url can not be null");
         ThrowableSupplier<InputStream, IOException> supplier = ()->url.openStream();
