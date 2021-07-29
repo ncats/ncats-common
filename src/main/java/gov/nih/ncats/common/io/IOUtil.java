@@ -139,21 +139,33 @@ public final class IOUtil {
     }
 
     /**
-     * Close the given closeable with supress any errors that are
+     * Close the given closeable with suppress any errors that are
      * thrown.
      * @param c the closeable to close; if null, then do nothing.
+     * @apiNote this is the same as {@link #closeQuietly(Closeable, boolean) closeQuietly(c, false)}
      */
     public static void closeQuietly(Closeable c) {
+        closeQuietly(c, false);
+    }
+
+    /**
+     * Close the given closeable with suppress any errors that are
+     * thrown.
+     * @param c the closeable to close; if null, then do nothing.
+     * @param printStacktrace should the stacktrace be printed to STDERR.
+     */
+    public static void closeQuietly(Closeable c, boolean printStacktrace) {
         if(c ==null){
             return;
         }
         try {
             c.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            if(printStacktrace) {
+                e.printStackTrace();
+            }
         }
     }
-
     public static BufferedOutputStream newBufferedOutputStream(File outputFile) throws IOException {
         File parent = outputFile.getParentFile();
         //check if it exists
