@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -168,6 +169,51 @@ public class YieldTest {
             assertEquals(Integer.valueOf(3), iter.next());
             assertFalse(iter.hasNext());
         }
+    }
+    @Test
+    public void callingNextAfterHasNextIsFalse() {
+        Yield<Integer> y = yield->{
+            yield.returning(1);
+            yield.returning(2);
+            yield.returning(3);
+        };
+        try (YieldingIterator<Integer> iter =y.iterator()) {
+            assertTrue(iter.hasNext());
+            assertEquals(Integer.valueOf(1), iter.next());
+            assertTrue(iter.hasNext());
+            assertEquals(Integer.valueOf(2), iter.next());
+            assertTrue(iter.hasNext());
+            assertEquals(Integer.valueOf(3), iter.next());
+            assertFalse(iter.hasNext());
+            assertThrows(NoSuchElementException.class, ()-> iter.next());
+        }
+    }
+    @Test
+    public void callingHasNextMultipleTimesWorks() {
+        Yield<Integer> y = yield->{
+            yield.returning(1);
+            yield.returning(2);
+            yield.returning(3);
+        };
+        try (YieldingIterator<Integer> iter =y.iterator()) {
+            assertTrue(iter.hasNext());
+            assertEquals(Integer.valueOf(1), iter.next());
+            assertTrue(iter.hasNext());
+            assertEquals(Integer.valueOf(2), iter.next());
+            assertTrue(iter.hasNext());
+            assertEquals(Integer.valueOf(3), iter.next());
+            assertFalse(iter.hasNext());
+            assertFalse(iter.hasNext());
+            assertFalse(iter.hasNext());
+            assertFalse(iter.hasNext());
+            assertFalse(iter.hasNext());
+            assertFalse(iter.hasNext());
+            assertFalse(iter.hasNext());
+            assertFalse(iter.hasNext());
+            assertFalse(iter.hasNext());
+            assertFalse(iter.hasNext());
+        }
+        
     }
 
     @Test

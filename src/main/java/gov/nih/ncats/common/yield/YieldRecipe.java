@@ -40,6 +40,8 @@ public class YieldRecipe<T> implements Iterable<T>, YieldingIterator<T> {
     private final AtomicReference<Optional<T>> currentValue = new AtomicReference<>(Optional.empty());
     private List<Runnable> toRunOnClose = new CopyOnWriteArrayList<>();
 
+    private volatile boolean complete=false;
+    
     private Optional<T> completed(){
         return END_TOKEN;
     }
@@ -68,12 +70,17 @@ public class YieldRecipe<T> implements Iterable<T>, YieldingIterator<T> {
 
     @Override
     public boolean hasNext() {
+    	if(complete) {
+    		return false;
+    	}
         if(currentValue.get().isPresent()){
             return true;
         }
         calculateNextValue();
         Optional<T> value = Unchecked.uncheck(() -> dataChannel.take());
         if (END_TOKEN == value){
+        	complete = true;
+        	
             return false;
         }
         currentValue.set(value);
