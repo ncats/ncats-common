@@ -22,6 +22,7 @@ import gov.nih.ncats.common.functions.ThrowingIntIndexedIntConsumer;
 import gov.nih.ncats.common.iter.PrimitiveArrayIterators;
 
 import java.util.*;
+import java.util.PrimitiveIterator.OfInt;
 import java.util.stream.IntStream;
 
 /**
@@ -283,6 +284,8 @@ public final class GrowableIntArray implements Iterable<Integer>{
 	public int[] toArray(){
 		return Arrays.copyOf(data,currentLength);
 	}
+	
+	
 	/**
 	 * Searches the current values in this growable array
 	 * using the binary search algorithm as implemented
@@ -445,6 +448,14 @@ public final class GrowableIntArray implements Iterable<Integer>{
 	}
 	@Override
 	public Iterator<Integer> iterator() {
+		return intIterator();
+	}
+	/**
+	 * Create a new primitive int iterator.
+	 * @return
+	 * @since 6.0
+	 */
+	public OfInt intIterator() {
 		return PrimitiveArrayIterators.create(data, currentLength);
 	}
 	/**

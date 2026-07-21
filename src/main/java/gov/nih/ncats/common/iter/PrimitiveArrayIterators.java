@@ -20,6 +20,7 @@ package gov.nih.ncats.common.iter;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.PrimitiveIterator.OfInt;
 
 /**
  * {@code PrimitiveArrayIterators}
@@ -52,7 +53,7 @@ public final class PrimitiveArrayIterators {
 	 * @return a new Iterator will never be null.
 	 * @throws NullPointerException if array is null.
 	 */
-	public static Iterator<Integer> create(int[] array){
+	public static OfInt create(int[] array){
 		return new IntIterator(array,0, array.length-1);
 	}
 	/**
@@ -68,12 +69,10 @@ public final class PrimitiveArrayIterators {
 	 * @throws IllegalArgumentException if length < 0. or if the length
 	 * is longer than the given array.
 	 */
-	public static Iterator<Integer> create(int[] array, int length){
+	public static OfInt create(int[] array, int length){
 		int arrayLength = array.length;
 		validateParameters(length, arrayLength);
-		if(length==0){
-			return IteratorUtil.createEmptyIterator();
-		}
+	
 		return new IntIterator(array,0, length-1);
 	}
 	public static void validateParameters(int length, int arrayLength) {
@@ -348,7 +347,7 @@ public final class PrimitiveArrayIterators {
 		return new LongIterator(array,start, end);
 	}
 	
-	private static class IntIterator implements Iterator<Integer>{
+	private static class IntIterator implements Iterator<Integer>, OfInt{
 
 		private final int[] array;
 		private int currentOffset;
@@ -367,17 +366,22 @@ public final class PrimitiveArrayIterators {
 
 		@Override
 		public Integer next() {
-			if(!hasNext()){
-				throw new NoSuchElementException();
-			}
-			Integer next =array[currentOffset];
-			currentOffset++;
-			return next;
+			return nextInt();
 		}
 
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();			
+		}
+
+		@Override
+		public int nextInt() {
+			if(!hasNext()){
+				throw new NoSuchElementException();
+			}
+			int next =array[currentOffset];
+			currentOffset++;
+			return next;
 		}
 		
 	}

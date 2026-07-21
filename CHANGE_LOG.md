@@ -1,8 +1,8 @@
 # CHANGE LOG
 
 ## 0.3.7
-1. Bug fix on `YieldIterator` that caused thread to block forever if `#hasNext()` was called again
-times it returned `false`.
+1. Bug fix on `YieldIterator` that caused thread to block forever if `#hasNext()` was called again.
+1. use primitive int iterator when possible for performance improvement
  
 ## 0.3.6
 1. Added `InputStreamSupplier#forInputStream( in )` which will parse the given InputStream to determine the encoding
